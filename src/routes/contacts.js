@@ -6,7 +6,7 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   const contacts = await getAllContacts();
   res.json({
-    status: '200',
+    status: 200,
     message: 'Successfully found contacts!',
     data: contacts,
   });
@@ -16,7 +16,7 @@ router.get('/:contactId', async (req, res) => {
   const contact = await getContactById(req.params.contactId);
   if (contact) {
     res.json({
-      status: '200',
+      status: 200,
       message: `Successfully found contact with id ${req.params.contactId}!`,
       data: contact,
     });
