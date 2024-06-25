@@ -4,6 +4,8 @@ import pino from 'pino-http';
 import dotenv from 'dotenv';
 import env from './utils/env.js';
 import contactsRouter from './routes/contacts.js';
+import notFoundHandler from './middlwares/notFoundHandler.js';
+import errorHandler from './middlwares/errorHandler.js';
 
 import Contact from './db/models/Contacts.js';
 
@@ -22,6 +24,8 @@ export function setupServer() {
     }),
   );
 
+  app.use(express.json());
+
   app.get('/api/contacts', async (req, res) => {
     const result = await Contact.find();
     console.log('Contacts found:', result);
@@ -30,9 +34,8 @@ export function setupServer() {
 
   app.use('/contacts', contactsRouter);
 
-  app.use((req, res) => {
-    res.status(404).json({ message: 'Not found' });
-  });
+  app.use(notFoundHandler);
+  app.use(errorHandler);
 
   app.listen(3000, () => console.log(`Server is running on port ${PORT}`));
 }
