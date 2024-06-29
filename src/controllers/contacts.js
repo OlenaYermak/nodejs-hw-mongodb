@@ -8,9 +8,24 @@ import {
 
 import createHttpError from 'http-errors';
 import mongoose from 'mongoose';
+import parsePaginationParams from '../utils/parsePaginationParams.js';
+import parseSortParams from '../utils/parseSortParams.js';
+import parseContactFilterParams from '../utils/parseContactFilterParams.js';
+
+import { contactFieldList } from '../constants/contactsConstants.js';
 
 export const getContactsController = async (req, res) => {
-  const contacts = await getAllContacts();
+  const { page, perPage } = parsePaginationParams(req.query);
+  const { sortBy, sortOrder } = parseSortParams(req.query, contactFieldList);
+  const filter = parseContactFilterParams(req.query);
+
+  const contacts = await getAllContacts({
+    page,
+    perPage,
+    sortBy,
+    sortOrder,
+    filter,
+  });
 
   res.json({
     status: 200,
