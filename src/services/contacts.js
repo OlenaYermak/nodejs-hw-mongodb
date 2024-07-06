@@ -12,6 +12,10 @@ export const getAllContacts = async ({
   const skip = (page - 1) * perPage;
 
   const contactRequest = {};
+  if (filter.userId) {
+    contactRequest.userId = filter.userId;
+  }
+
   if (filter.contactType) {
     contactRequest.contactType = filter.contactType;
   }
@@ -45,8 +49,8 @@ export const getAllContacts = async ({
   };
 };
 
-export const getContactById = async (id) => {
-  return await Contact.findById(id);
+export const getContact = (filter) => {
+  Contact.findOne(filter);
 };
 
 export const addContact = (data) => Contact.create(data);

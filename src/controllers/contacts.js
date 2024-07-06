@@ -1,6 +1,6 @@
 import {
   getAllContacts,
-  getContactById,
+  getContact,
   addContact,
   updateContact,
   deleteContact,
@@ -15,9 +15,11 @@ import parseContactFilterParams from '../utils/parseContactFilterParams.js';
 import { contactFieldList } from '../constants/contactsConstants.js';
 
 export const getContactsController = async (req, res) => {
+  const { _id: userId } = req.user;
+
   const { page, perPage } = parsePaginationParams(req.query);
   const { sortBy, sortOrder } = parseSortParams(req.query, contactFieldList);
-  const filter = parseContactFilterParams(req.query);
+  const filter = { ...parseContactFilterParams(req.query), userId };
 
   const contacts = await getAllContacts({
     page,
@@ -36,10 +38,11 @@ export const getContactsController = async (req, res) => {
 
 export const getContactsByIdController = async (req, res) => {
   const { contactId } = req.params;
+  const { _id: userId } = req.user;
 
   if (
     !mongoose.Types.ObjectId.isValid(contactId) ||
-    !(await getContactById(contactId))
+    !(await getContact(contactId))
   ) {
     throw createHttpError(
       404,
@@ -51,7 +54,7 @@ export const getContactsByIdController = async (req, res) => {
     );
   }
 
-  const contact = await getContactById(contactId);
+  const contact = await getContact({ contactId, userId });
 
   res.json({
     status: 200,
@@ -61,7 +64,8 @@ export const getContactsByIdController = async (req, res) => {
 };
 
 export const addContactsController = async (req, res) => {
-  const contact = await addContact(req.body);
+  const { _id: userId } = req.user;
+  const contact = await addContact({ ...req.body, userId });
 
   res.status(201).json({
     status: 201,
@@ -72,6 +76,7 @@ export const addContactsController = async (req, res) => {
 
 export const patchContactsController = async (req, res, next) => {
   const { contactId } = req.params;
+  const { _id: userId } = req.user;
 
   if (!mongoose.Types.ObjectId.isValid(contactId)) {
     throw createHttpError(
@@ -84,7 +89,7 @@ export const patchContactsController = async (req, res, next) => {
     );
   }
 
-  const result = await updateContact(contactId, req.body);
+  const result = await updateContact(contactId, userId, req.body);
 
   if (!result) {
     throw createHttpError(
@@ -106,8 +111,9 @@ export const patchContactsController = async (req, res, next) => {
 
 export const deleteContactController = async (req, res, next) => {
   const { contactId } = req.params;
+  const { _id: userId } = req.user;
 
-  if (!mongoose.Types.ObjectId.isValid(contactId)) {
+  if (!mongoose.Types.ObjectId.isValid(contactId, userId)) {
     throw createHttpError(
       404,
       res.status(404).json({
