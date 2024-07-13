@@ -24,6 +24,7 @@ const contactsSchema = new Schema(
       required: false,
       enum: ['personal', 'home', 'other'],
     },
+    photo: { type: String },
     userId: {
       type: Schema.Types.ObjectId,
       ref: 'users',
